@@ -24,16 +24,14 @@ export class ApiCallService {
     console.error('An error occurred', error); // for demo purposes only
     return Promise.reject(error.message || error);
   }
-  getItems() {
+  getAll(url) {
     try{
       return new Promise(resolve => {
             // We're using Angular HTTP provider to request the data,
             // then on the response, it'll map the JSON data to a parsed JS object.
             // Next, we process the data and resolve the promise with the new data.
-
             //http://192.168.16.93/DailyItems/Api/items
-
-            this.http.get('http://www.utechtest.somee.com/api/items')
+            this.http.get(url)
               .map(res => res.json())
               .subscribe(data => {
                 // we've got back the raw data, now generate the core schedule data
@@ -46,14 +44,12 @@ export class ApiCallService {
     catch (ex){
       alert(ex);
     }
-  // don't have the data yet
-    
   } 
   
-  postItems(body) {
+  post(url,body) {
     try {
       return new Promise(resolve => {
-      this.http.post('http://www.utechtest.somee.com/api/items',body)
+      this.http.post(url,body)
         .map(res => res.json())
         .subscribe(data => {
           this.data = data;
@@ -64,18 +60,5 @@ export class ApiCallService {
     catch(ex){
      alert (ex);
     } 
-    
   } 
- 
- deleteItems(date) {
-    return new Promise(resolve => {
-      this.http.get('http://192.168.16.93/DailyItems/items/date/'+date+'')
-        .map(res => res.json())
-        .subscribe(data => {
-          //this.data = data;
-          resolve(this.data);
-        });
-    });
-  } 
-
 }

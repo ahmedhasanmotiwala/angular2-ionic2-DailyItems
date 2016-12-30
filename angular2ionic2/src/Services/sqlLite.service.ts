@@ -31,32 +31,34 @@ export class sqlLiteService {
         });
     } 
  
-    public add(description,qty,cost,date) {
-        this.database.executeSql("Delete from tblItems where date=?", [date]).then((data) => {
-            console.log("DELETED: " + JSON.stringify(data));
-            this.database.executeSql("INSERT INTO tblItems (description, qty, cost, total, date) VALUES ('"+description+"','"+qty+"','"+cost+"','"+qty * cost+"','"+date+"')", []).then((data) => {
-            console.log("INSERTED: " + JSON.stringify(data));
-        }, (error) => {
-            alert("Insert ERROR: " + JSON.stringify(error.err));
-        });
-        }, (error) => {
-            alert("Delete ERROR: " + JSON.stringify(error.err));
-        }); 
-    }
-    public refresh(today) : any {
-        this.database.executeSql("SELECT * FROM tblItems where date =?", [today]).then((data) => {
-            this.invoice.items = [];
-            if(data.rows.length > 0) {
-                for(var i = 0; i < data.rows.length; i++) {
-                    this.invoice.items.push({description: data.rows.item(i).description, qty: data.rows.item(i).qty, cost: data.rows.item(i).cost});
-                //, total: data.rows.item(i).total
-                }
-            }
-        }, (error) => {
-            alert("ERROR: " + JSON.stringify(error));
-        })
-        return this.invoice;
-    }
+    // public add(description,qty,cost,date) {
+    //     this.database.executeSql("Delete from tblItems where date=?", [date]).then((data) => {
+    //         console.log("DELETED: " + JSON.stringify(data));
+    //         this.database.executeSql("INSERT INTO tblItems (description, qty, cost, total, date) VALUES ('"+description+"','"+qty+"','"+cost+"','"+qty * cost+"','"+date+"')", []).then((data) => {
+    //         console.log("INSERTED: " + JSON.stringify(data));
+    //     }, (error) => {
+    //         alert("Insert ERROR: " + JSON.stringify(error.err));
+    //     });
+    //     }, (error) => {
+    //         alert("Delete ERROR: " + JSON.stringify(error.err));
+    //     }); 
+    // }
+
+    // public refresh(today) : any {
+    //     this.database.executeSql("SELECT * FROM tblItems where date =?", [today]).then((data) => {
+    //         this.invoice.items = [];
+    //         if(data.rows.length > 0) {
+    //             for(var i = 0; i < data.rows.length; i++) {
+    //                 this.invoice.items.push({description: data.rows.item(i).description, qty: data.rows.item(i).qty, cost: data.rows.item(i).cost});
+    //             //, total: data.rows.item(i).total
+    //             }
+    //         }
+    //     }, (error) => {
+    //         alert("ERROR: " + JSON.stringify(error));
+    //     })
+    //     return this.invoice;
+    // }
+    
     public sync(items) : any{
         this.database.executeSql("SELECT * FROM tblItems", []).then((data) => {
             this.AllItems = [];
@@ -67,7 +69,7 @@ export class sqlLiteService {
                     body.push({"Id":data.rows.item(i).id,"Description":data.rows.item(i).description,"Qty":data.rows.item(i).qty,"Cost":data.rows.item(i).cost,"Total":data.rows.item(i).cost * data.rows.item(i).qty,"Date":data.rows.item(i).date});
                    // alert(data.rows.item(i).id);
                 }
-                this.ApiCallService.postItems(body).then((data)=>{
+                this.ApiCallService.post('http://www.utechtest.somee.com/api/items',body).then((data)=>{
                    alert("Synced Successfully")
                 });
             }

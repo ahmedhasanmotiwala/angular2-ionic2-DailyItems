@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { NavController, NavParams, LoadingController } from 'ionic-angular';
 import { Platform } from 'ionic-angular';
 import { StatusBar, Splashscreen } from 'ionic-native';
-import { sqlLiteService } from './sqlLite.service';
+import { sqlLiteService } from '../../Services/sqlLite.service';
 import { Injectable } from '@angular/core';
 import { SQLite } from 'ionic-native';
 import { DatePicker } from 'ionic-native';
-import { ApiCallService } from './ApiCall.service';
+import { ApiCallService } from '../../Services/ApiCall.service';
 import { DefaultDateDirective } from './default-date-directive';
 import {Network} from "ionic-native";
+import { ItemsDTO } from './Items.dto';
 
 //declare var navigator: any;
 declare var Connection;
@@ -61,7 +62,7 @@ declare var Connection;
     </ion-item>
   </ion-list> -->
     `,
-    providers: [sqlLiteService,LoadingController,ApiCallService,Network]
+    providers: [sqlLiteService,LoadingController,ApiCallService,Network,ItemsDTO]
 })
 
 export class homeComponent implements OnInit {
@@ -69,6 +70,7 @@ export class homeComponent implements OnInit {
     public loadings;
     public AllItems;
     public status;
+    
 
     date = new Date();
     today = this.date.toISOString().substring(0, 10);
@@ -83,7 +85,9 @@ export class homeComponent implements OnInit {
     }
 
 
-    constructor(public navController: NavController,public loading:LoadingController,public ApiCallService: ApiCallService, public sqlLite:sqlLiteService){
+    constructor( public navController: NavController,public loading:LoadingController,
+                 public ApiCallService: ApiCallService, public sqlLite:sqlLiteService,
+                 public itemsDTO : ItemsDTO ){
         this.loadItems();
     }
     isOnline(): boolean {
@@ -95,7 +99,7 @@ export class homeComponent implements OnInit {
         this.presentLoadingDefault();
         this.loadings.present();
         if(this.isOnline()){
-            this.ApiCallService.getItems().then(data => {
+            this.ApiCallService.getAll('http://www.utechtest.somee.com/api/items').then(data => {
                 this.Items = data;
                 this.loadings.dismiss();
             },
@@ -143,7 +147,8 @@ export class homeComponent implements OnInit {
         this.presentLoadingDefault();
                 this.loadings.present().then((e)=>{
                     this.invoice.items.forEach(e => {
-                    this.sqlLite.add(e.description,e.qty,e.cost,this.today);
+                    //this.sqlLite.add(e.description,e.qty,e.cost,this.today);
+                    this.itemsDTO.add(e.description,e.qty,e.cost,this.today);
                 })
                 }).then(()=>{
                     this.loadings.dismiss();
@@ -161,7 +166,7 @@ export class homeComponent implements OnInit {
                 this.invoice.items.forEach(e => {
                 body.push({"Id":0,"Description":""+e.description+"","Qty":""+e.qty+"","Cost":""+e.cost+"","Total":""+e.cost * e.qty+"","Date":""+this.today+""});
                 });
-                this.ApiCallService.postItems(body).then((data)=>{
+                this.ApiCallService.post('http://www.utechtest.somee.com/api/items',body).then((data)=>{
                     console.log(JSON.stringify(data));
                     this.loadings.dismiss();
                     alert("Successfully Saved");
@@ -172,7 +177,8 @@ export class homeComponent implements OnInit {
         this.presentLoadingDefault();
         this.loadings.present();
         this.invoice.items = [];
-        this.invoice = (this.sqlLite.refresh(this.today));
+        //this.invoice = (this.sqlLite.refresh(this.today));
+        this.invoice = (this.itemsDTO.refresh(this.today));
         this.loadings.dismiss();
     }
 
